@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5">
+    <title>Daylytics - يوميات الإنتاجية الذكية</title>
+    <link rel="manifest" href="./manifest.json">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧠</text></svg>">
+</head>
+<body>
+    <div class="app-wrapper" id="app">
+        <header class="app-header">
+            <div class="logo-area">
+                <div class="logo-icon"><i class="fas fa-brain"></i></div>
+                <span class="logo-text">Daylytics</span>
+            </div>
+            <div class="lang-selector">
+                <button class="lang-btn active" data-lang="ar" data-i18n="ar">ع</button>
+                <button class="lang-btn" data-lang="fr" data-i18n="fr">FR</button>
+                <button class="lang-btn" data-lang="en" data-i18n="en">EN</button>
+            </div>
+        </header>
+
+        <!-- ===== AUTH CONTAINER ===== -->
+        <div id="authContainer">
+            <!-- Login Card -->
+            <div class="auth-card" id="loginCard">
+                <div class="auth-title" data-i18n="login">تسجيل الدخول</div>
+                <form id="loginForm">
+                    <div class="input-group">
+                        <label data-i18n="email">البريد الإلكتروني</label>
+                        <input type="email" id="loginEmail" placeholder="exemple@mail.com" data-i18n-placeholder="email">
+                    </div>
+                    <div class="input-group">
+                        <label data-i18n="password">كلمة المرور</label>
+                        <input type="password" id="loginPassword" placeholder="••••••••" data-i18n-placeholder="password">
+                    </div>
+                    <button type="submit" class="btn-primary" data-i18n="login_btn">دخول</button>
+                </form>
+                <div class="auth-switch">
+                    <span data-i18n="no_account">ليس لديك حساب؟</span>
+                    <span id="goToSignup" style="cursor:pointer;color:var(--primary);font-weight:600;" data-i18n="signup">إنشاء حساب</span>
+                </div>
+            </div>
+
+            <!-- Signup Card -->
+            <div class="auth-card hidden" id="signupCard">
+                <div class="auth-title" data-i18n="signup">إنشاء حساب</div>
+                <form id="signupForm">
+                    <div class="input-group">
+                        <label data-i18n="name">الاسم</label>
+                        <input type="text" id="signupName" placeholder="اسم المستخدم" data-i18n-placeholder="name">
+                    </div>
+                    <div class="input-group">
+                        <label data-i18n="email">البريد الإلكتروني</label>
+                        <input type="email" id="signupEmail" placeholder="exemple@mail.com" data-i18n-placeholder="email">
+                    </div>
+                    <div class="input-group">
+                        <label data-i18n="password">كلمة المرور</label>
+                        <input type="password" id="signupPassword" placeholder="••••••••" data-i18n-placeholder="password">
+                    </div>
+                    <button type="submit" class="btn-primary" data-i18n="signup_btn">تسجيل</button>
+                </form>
+                <div class="auth-switch">
+                    <span data-i18n="have_account">لديك حساب؟</span>
+                    <span id="goToLogin" style="cursor:pointer;color:var(--primary);font-weight:600;" data-i18n="login">تسجيل الدخول</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== DASHBOARD ===== -->
+        <div class="dashboard" id="dashboard">
+            <!-- Stats Grid -->
+            <div class="stats-grid" id="statsGrid">
+                <div class="stat-card">
+                    <div class="stat-number" id="statProductivity">0%</div>
+                    <div class="stat-label" data-i18n="productivity">الإنتاجية</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="statRest">0%</div>
+                    <div class="stat-label" data-i18n="rest">الراحة</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="statSleep">0%</div>
+                    <div class="stat-label" data-i18n="sleep">النوم</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="statStress">0%</div>
+                    <div class="stat-label" data-i18n="stress">الإجهاد</div>
+                </div>
+            </div>
+
+            <!-- Add Activity -->
+            <div class="activity-section">
+                <h3 data-i18n="add_activity">➕ إضافة نشاط</h3>
+                <div class="activity-row">
+                    <input type="text" id="actName" placeholder="اسم النشاط" data-i18n-placeholder="activity_name">
+                    <input type="number" id="actDuration" placeholder="المدة (دقائق)" data-i18n-placeholder="duration">
+                    <input type="time" id="actStartTime" value="09:00">
+                    <select id="actCategory">
+                        <option value="work" data-i18n="work">عمل</option>
+                        <option value="exercise" data-i18n="exercise">رياضة</option>
+                        <option value="leisure" data-i18n="leisure">ترفيه</option>
+                        <option value="selfcare" data-i18n="selfcare">عناية ذاتية</option>
+                        <option value="social" data-i18n="social">تواصل اجتماعي</option>
+                        <option value="education" data-i18n="education">تعليم</option>
+                        <option value="other" data-i18n="other">أخرى</option>
+                    </select>
+                    <input type="number" id="actQuality" placeholder="الجودة (1-10)" data-i18n-placeholder="quality" min="1" max="10" value="5">
+                </div>
+                <button class="btn-add" id="addActivityBtn">
+                    <i class="fas fa-plus-circle"></i> <span data-i18n="add_activity">إضافة نشاط</span>
+                </button>
+                <div class="activity-list" id="activityList">
+                    <div class="empty-state" data-i18n="no_activities">لا توجد أنشطة مسجلة اليوم</div>
+                </div>
+            </div>
+
+            <!-- Insights -->
+            <div class="insight-box">
+                <div class="insight-title">
+                    <span>📊 <span data-i18n="insights">التحليلات الذكية</span></span>
+                    <button class="btn-add" style="width:auto;padding:8px 16px;font-size:13px;" id="refreshAnalytics">
+                        <i class="fas fa-sync"></i>
+                    </button>
+                </div>
+                <div id="insightsContainer"></div>
+            </div>
+
+            <!-- Recommendations -->
+            <div class="insight-box">
+                <div class="insight-title">
+                    <span>💡 <span data-i18n="recommendations">التوصيات الذكية</span></span>
+                </div>
+                <div id="recommendationsContainer"></div>
+            </div>
+
+            <!-- Comparison -->
+            <div class="insight-box">
+                <div class="insight-title">
+                    <span>📈 <span data-i18n="comparison">المقارنة</span></span>
+                </div>
+                <div id="comparisonContainer"></div>
+            </div>
+
+            <!-- Push Notifications -->
+            <button class="btn-add" id="enablePushBtn" style="margin-bottom:12px;">
+                <i class="fas fa-bell"></i> <span data-i18n="push_enable">تفعيل الإشعارات</span>
+            </button>
+
+            <!-- Logout -->
+            <button class="btn-primary" id="logoutBtn" style="background:#eef3ff;color:var(--dark);box-shadow:none;margin-top:8px;">
+                <i class="fas fa-sign-out-alt"></i> <span data-i18n="logout">تسجيل الخروج</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ===== TOAST CONTAINER ===== -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- ===== SCRIPTS ===== -->
+    <script src="js/api.js"></script>
+    <script src="js/translations.js"></script>
+    <script src="js/pushManager.js"></script>
+    <script src="js/app.js"></script>
+    
+    <script>
+        // Service Worker registration
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js')
+                .then(reg => console.log('✅ SW registered'))
+                .catch(err => console.error('❌ SW registration failed:', err));
+        }
+    </script>
+</body>
+</html>
