@@ -1,12 +1,23 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const auth = require('../middleware/auth');
+const { JWT_SECRET } = require('../config/jwt');
+const { vapidPublicKey } = require('../config/vapid');
+const { validateEmail, validatePassword } = require('../utils/validators');
 const router = express.Router();
 
 // Register
 router.post('/register', async (req, res) => {
   try {
     const { email, password, name } = req.body;
+    
+    if (!validateEmail(email)) {
+      return res.status(400).json({ error: 'Invalid email format' });
+    }
+    if (!validatePassword(password)) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    }
     
     // Check if user exists
     const existingUser = await User.findOne({ email });
@@ -26,7 +37,7 @@ router.post('/register', async (req, res) => {
     // Generate token
     const token = jwt.sign(
       { userId: user._id },
-      process.env.JWT_SECRET,
+      JWT_SECRET,
       { expiresIn: '7d' }
     );
     
@@ -50,6 +61,10 @@ router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
     
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required' });
+    }
+    
     // Find user
     const user = await User.findOne({ email });
     if (!user) {
@@ -69,7 +84,7 @@ router.post('/login', async (req, res) => {
     // Generate token
     const token = jwt.sign(
       { userId: user._id },
-      process.env.JWT_SECRET,
+      JWT_SECRET,
       { expiresIn: '7d' }
     );
     
@@ -90,13 +105,39 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// Update push subscription
-router.post('/push-subscription', async (req, res) => {
+// Get current user
+router.get('/me', auth, async (req, res) => {
   try {
-    const { userId } = req.user || req.body;
+    res.json({
+      user: {
+        id: req.user._id,
+        email: req.user.email,
+        name: req.user.name,
+        preferredLanguage: req.user.preferredLanguage,
+        wakeTime: req.user.wakeTime,
+        sleepTime: req.user.sleepTime
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch user' });
+  }
+});
+
+// Get VAPID public key for push subscriptions
+router.get('/vapid-public-key', (req, res) => {
+  res.json({ publicKey: vapidPublicKey });
+});
+
+// Update push subscription
+router.post('/push-subscription', auth, async (req, res) => {
+  try {
     const { subscription } = req.body;
     
-    await User.findByIdAndUpdate(userId, { pushSubscription: subscription });
+    if (!subscription || !subscription.endpoint) {
+      return res.status(400).json({ error: 'Invalid push subscription' });
+    }
+    
+    await User.findByIdAndUpdate(req.userId, { pushSubscription: subscription });
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: 'Failed to update push subscription' });

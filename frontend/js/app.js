@@ -17,7 +17,7 @@ class DaylyticsApp {
         
         this.api = new APIClient();
         this.translations = new Translations();
-        this.pushManager = new PushManager();
+        this.pushManager = new PushNotificationManager();
         
         if (this.state.token) {
             this.api.setToken(this.state.token);
@@ -291,11 +291,11 @@ class DaylyticsApp {
         }
         
         container.innerHTML = activities.map(activity => `
-            <div class="activity-item" data-id="${activity._id}">
-                <span class="act-name">${activity.name}</span>
+            <div class="activity-item" data-id="${this.escapeHtml(activity._id)}">
+                <span class="act-name">${this.escapeHtml(activity.name)}</span>
                 <span class="act-category">${this.translations.get(activity.category || 'other', this.state.language)}</span>
                 <span class="act-dur">${activity.duration} د</span>
-                <button class="act-delete" onclick="window.app.deleteActivity('${activity._id}')">
+                <button class="act-delete" onclick="window.app.deleteActivity('${this.escapeHtml(activity._id)}')">
                     <i class="fas fa-trash"></i>
                 </button>
             </div>
@@ -433,7 +433,8 @@ class DaylyticsApp {
     
     async enablePushNotifications() {
         try {
-            const subscription = await this.pushManager.subscribe();
+            const vapidPublicKey = await this.api.getVapidPublicKey();
+            const subscription = await this.pushManager.subscribe(vapidPublicKey);
             if (subscription) {
                 await this.api.savePushSubscription(subscription);
                 this.showToast(this.translations.get('push_enabled', this.state.language), 'success');
@@ -487,6 +488,15 @@ class DaylyticsApp {
         if (this.state.isLoggedIn) {
             this.loadDashboardData();
         }
+    }
+    
+    escapeHtml(value) {
+        return String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
     }
     
     showToast(message, type = 'info') {

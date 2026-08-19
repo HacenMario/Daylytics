@@ -3,7 +3,7 @@
  * إدارة الإشعارات الفورية
  */
 
-class PushManager {
+class PushNotificationManager {
     constructor() {
         this.registration = null;
         this.isSupported = 'serviceWorker' in navigator && 'PushManager' in window;
@@ -24,9 +24,14 @@ class PushManager {
         }
     }
     
-    async subscribe() {
+    async subscribe(vapidPublicKey) {
         if (!this.isSupported) {
             console.warn('⚠️ Push not supported');
+            return null;
+        }
+        
+        if (!vapidPublicKey) {
+            console.warn('⚠️ Missing VAPID public key');
             return null;
         }
         
@@ -43,9 +48,7 @@ class PushManager {
             
             const subscription = await this.registration.pushManager.subscribe({
                 userVisibleOnly: true,
-                applicationServerKey: this.urlBase64ToUint8Array(
-                    'BF7IlardTlVn6X4dNtcTad2ixM09jH87Q-vKyo5ScWY9uzLw3y-goXcgPmC8gxBpFWIGVgFWKxwC2pTDXNYnlD4'
-                )
+                applicationServerKey: this.urlBase64ToUint8Array(vapidPublicKey)
             });
             
             console.log('✅ Push subscription created');
@@ -72,5 +75,5 @@ class PushManager {
     }
 }
 
-// Make it globally available
-window.PushManager = PushManager;
+// Make it globally available (without overwriting the native window.PushManager)
+window.PushNotificationManager = PushNotificationManager;
