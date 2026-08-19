@@ -5,7 +5,10 @@
 
 class APIClient {
     constructor() {
-        this.baseURL = 'http://localhost:5000/api';
+        // Use same-origin API when served by the backend, fallback to localhost for file:// or other origins
+        this.baseURL = window.location.protocol.startsWith('http')
+            ? `${window.location.origin}/api`
+            : 'http://localhost:5000/api';
         this.token = localStorage.getItem('token') || null;
     }
 
@@ -47,12 +50,6 @@ class APIClient {
             if (response.status === 401) {
                 console.warn('⚠️ Unauthorized - clearing token');
                 this.setToken(null);
-                localStorage.removeItem('token');
-                // Redirect to login if dashboard is shown
-                if (document.getElementById('dashboard')?.style.display === 'block') {
-                    document.getElementById('authContainer').style.display = 'block';
-                    document.getElementById('dashboard').style.display = 'none';
-                }
                 throw new Error('Authentication required. Please login again.');
             }
 
@@ -129,6 +126,11 @@ class APIClient {
     }
 
     // ===== PUSH NOTIFICATIONS =====
+    async getVapidPublicKey() {
+        const data = await this.request('/auth/vapid-public-key');
+        return data.publicKey;
+    }
+
     async savePushSubscription(subscription) {
         return this.request('/auth/push-subscription', {
             method: 'POST',

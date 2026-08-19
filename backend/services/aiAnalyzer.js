@@ -63,9 +63,9 @@ class AIAnalyzer {
     });
 
     return {
-      productivity: Math.round(productivity * 100),
-      restScore: Math.round(restRatio * 100),
-      stressLevel: Math.round(stressLevel * 100),
+      productivity: Math.min(Math.round(productivity * 100), 100),
+      restScore: Math.min(Math.round(restRatio * 100), 100),
+      stressLevel: Math.min(Math.round(stressLevel * 100), 100),
       sleepQuality: this.calculateSleepQuality(activities),
       categories,
       totalMinutes,
@@ -421,6 +421,10 @@ class AIAnalyzer {
       thisMonth: moment().startOf('month'),
       lastMonth: moment().subtract(1, 'month').startOf('month')
     };
+    
+    if (!periods[period1] || !periods[period2]) {
+      throw new Error('Invalid period. Valid periods: today, yesterday, thisWeek, lastWeek, thisMonth, lastMonth');
+    }
     
     const p1Start = periods[period1];
     const p1End = period1 === 'today' ? moment().endOf('day') : moment(p1Start).endOf(period1 === 'yesterday' ? 'day' : period1 === 'thisWeek' || period1 === 'lastWeek' ? 'week' : 'month');

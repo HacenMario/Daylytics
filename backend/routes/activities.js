@@ -3,12 +3,29 @@ const Activity = require('../models/Activity');
 const AIAnalyzer = require('../services/aiAnalyzer');
 const PushService = require('../services/pushService');
 const auth = require('../middleware/auth');
+const { validateActivityName, validateDuration, validateTime, validateCategory, validateQuality } = require('../utils/validators');
 const router = express.Router();
 
 // Add activity
 router.post('/add', auth, async (req, res) => {
   try {
     const { name, duration, startTime, wakeTime, category, quality, notes } = req.body;
+    
+    if (!validateActivityName(name)) {
+      return res.status(400).json({ error: 'Activity name is required' });
+    }
+    if (!validateDuration(duration)) {
+      return res.status(400).json({ error: 'Duration must be between 1 and 1440 minutes' });
+    }
+    if (startTime && !validateTime(startTime)) {
+      return res.status(400).json({ error: 'Invalid start time format (HH:mm)' });
+    }
+    if (category && !validateCategory(category)) {
+      return res.status(400).json({ error: 'Invalid category' });
+    }
+    if (quality !== undefined && quality !== null && !validateQuality(quality)) {
+      return res.status(400).json({ error: 'Quality must be between 1 and 10' });
+    }
     
     const activity = new Activity({
       user: req.userId,
@@ -22,15 +39,17 @@ router.post('/add', auth, async (req, res) => {
     });
     
     // Calculate end time
-    const start = new Date(`1970-01-01T${activity.startTime}`);
+    const start = new Date(`1970-01-01T${activity.startTime}:00`);
     const end = new Date(start.getTime() + activity.duration * 60000);
     activity.endTime = end.toTimeString().slice(0, 5);
     
     await activity.save();
     
-    // Send push notification for productivity alert
     const analysis = await AIAnalyzer.analyzeProductivity(req.userId);
-    await PushService.sendProductivityAlert(req.userId, analysis.productivity);
+    
+    // Send push notification without blocking the response
+    PushService.sendProductivityAlert(req.userId, analysis.productivity)
+      .catch(err => console.error('Push alert error:', err));
     
     res.status(201).json({
       success: true,
@@ -85,6 +104,10 @@ router.delete('/:id', auth, async (req, res) => {
 router.get('/range', auth, async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
+    
+    if (!startDate || !endDate || isNaN(new Date(startDate).getTime()) || isNaN(new Date(endDate).getTime())) {
+      return res.status(400).json({ error: 'Valid startDate and endDate are required' });
+    }
     
     const start = new Date(startDate);
     start.setHours(0, 0, 0, 0);

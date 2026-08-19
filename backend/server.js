@@ -1,4 +1,5 @@
 require('dotenv').config();
+const path = require('path');
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -44,6 +45,9 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Internationalization
 app.use(i18nMiddleware);
 
+// Serve frontend static files
+app.use(express.static(path.join(__dirname, '../frontend')));
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/activities', activityRoutes);
@@ -56,6 +60,11 @@ app.get('/health', (req, res) => {
     uptime: process.uptime(),
     timestamp: new Date().toISOString()
   });
+});
+
+// 404 handler for unknown API routes
+app.use('/api', (req, res) => {
+  res.status(404).json({ error: 'API route not found' });
 });
 
 // Error handling middleware

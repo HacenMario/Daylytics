@@ -47,11 +47,16 @@ const ActivitySchema = new mongoose.Schema({
     default: Date.now
   },
   dayOfWeek: {
-    type: Number, // 0-6 (Sunday-Saturday)
-    get: function() {
-      return this.date.getDay();
-    }
+    type: Number // 0-6 (Sunday-Saturday)
   }
+});
+
+// Set dayOfWeek from date before saving
+ActivitySchema.pre('save', function(next) {
+  if (this.date) {
+    this.dayOfWeek = new Date(this.date).getDay();
+  }
+  next();
 });
 
 // Index for efficient queries
