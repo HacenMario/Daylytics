@@ -1,8 +1,0 @@
-{ 
-  "name": "daylytics", 
-  "version": "1.0.0", 
-  "scripts": { 
-    "start": "cd backend && npm start", 
-    "dev": "cd backend && npm run dev" 
-  } 
-} 
